@@ -7,17 +7,8 @@ services:
     build:
       context: .
     command: sh -c "wait-for db:3306 && /lmnad/run_app.sh"
-    environment:
-      - DJANGO_SECRET_KEY=dev
-      - DJANGO_SETTINGS_MODULE=project.settings.server
-      - DB_HOST=db
-      - DB_USER=kira
-      - DB_PASSWORD=root
-      - CELERY_BROKER_URL=amqp://guest:guest@broker:5672
-      - CELERY_RESULT_BACKEND=rpc://
-      - YANDEX_TRANSLATE_API_KEY=dev
-      - GEOPOSITION_GOOGLE_MAPS_API_KEY=dev
-      
+    env_file:
+      - dev.env
     depends_on:
       - db
     restart: always
@@ -31,12 +22,8 @@ services:
   db:
     container_name: lmnad_mysql
     image: mysql:5.7
-    environment:
-      - MYSQL_DATABASE=lmnad_db
-      - MYSQL_ROOT_HOST=%
-      - MYSQL_ROOT_PASSWORD=root
-      - MYSQL_USER=kira
-      - MYSQL_PASSWORD=root
+    env_file:
+      - dev.env
     ports:
       - "3306:3306"
     volumes:
@@ -72,13 +59,8 @@ services:
     container_name: lmnad_celery
     hostname: celery_worker
     command: sh -c "wait-for broker:5672 && wait-for django:8000 -- celery worker -A project -l info"
-    environment:
-      - DJANGO_SETTINGS_MODULE=project.settings.server
-      - DB_HOST=db
-      - DB_USER=kira
-      - DB_PASSWORD=root
-      - CELERY_BROKER_URL=amqp://guest:guest@broker:5672
-      - CELERY_RESULT_BACKEND=rpc://
+    env_file:
+      - dev.env
     depends_on:
       - broker
       - django
@@ -91,8 +73,8 @@ services:
     image: mher/flower:0.9.4
     container_name: lmnad_flower
     command: flower --port=5555 --url_prefix=flower
-    environment:
-      - CELERY_BROKER_URL=amqp://guest:guest@broker:5672
+    env_file:
+      - dev.env
     ports:
       - "5555:5555"
     depends_on:
