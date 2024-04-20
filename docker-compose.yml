@@ -13,6 +13,8 @@ services:
       - db
     restart: always
     tty: true
+    ports:
+      - "8000:8000"
     volumes:
       - static_data:/lmnad/project/static
       - media_data:/lmnad/project/media
